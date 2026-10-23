@@ -7,7 +7,7 @@ import cv2
 # --------------------------------------------------
 
 # 자신의 스마트폰 IP Webcam 주소로 변경합니다 (스마트폰 화면에 표시된 주소 + /video)
-stream_url = "http://192.168.219.115:8080/video"
+stream_url = "http://192.168.40.146:8080/video"
 
 output_dir = Path("outputs/live_roi")
 output_dir.mkdir(parents=True, exist_ok=True)
