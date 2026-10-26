@@ -30,3 +30,6 @@ Thumbs.db
 
 # 환경설정
 .env
+
+# 2일차 Challenge 원본 사진 (crop_challenge.py 입력·백업)
+roi_temp/*.jpg

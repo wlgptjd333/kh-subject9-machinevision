@@ -87,3 +87,59 @@ Jupyter: `./jupyter.sh` (또는 `jupyter notebook --no-browser --port=8888`)
 ### 다음 학습
 
 2일차 — Image Enhancement: 오늘 정한 ROI 안에서 검사하기 좋은 영상 상태를 만드는 방법
+
+---
+
+## Day 02 — Image Enhancement와 검사 영상 품질 개선
+
+1일차에 설정한 ROI를 이용하여
+촬영조건과 영상 품질이 검사 결과에 어떤 영향을 주는지 확인했다.
+
+기준 이미지: 강사 제공 `samples/day02/cap_on_reference.jpg` (1일차 17절 실시간 ROI 결과 대신 사용)
+
+### 실습 내용
+
+| 파일 | 내용 | 결과 |
+|---|---|---|
+| `src/09_color_space.py` | BGR / Gray / HSV 비교 | Gray·V가 병뚜껑-배경 차이를 가장 잘 보여줌. H는 채도가 낮아 불안정 |
+| `src/10_brightness_contrast.py` | Brightness / Contrast (beta 0·20·50·80) | beta 20~50이 자연스러움. 80은 뿌옇게 됨 |
+| `src/11_gamma.py` | Gamma 0.6~2.0 | 1.2~1.5가 어두운 홈을 살리면서 덜 뿌옇다 |
+| `src/12_clahe.py` | CLAHE clipLimit 1~4 | 2.0이 적절. 3.0 이상은 배경 Texture도 강조 |
+| `src/13_filter_compare.py` | Gaussian / Median / Bilateral | 점 Noise에는 Median 3이 가장 적절 |
+| `src/14_sharpen.py` | Sharpening | 흐린 홈을 일부 복원, 경계 주변이 약간 거칠어짐 |
+| `src/15_threshold_otsu.py` | Threshold 80·120·160 / Otsu | 80·160은 실패, Otsu가 118을 자동 선택 |
+| `src/16_preprocess_compare.py` | 전처리 전·후 Otsu 비교 | Gaussian + Otsu가 가장 깨끗함, CLAHE + Otsu는 조각이 늘어남 |
+| `src/17_day02_challenge.py` | Mini Challenge | 전처리 미사용 + 3일차 추가 확인 (아래) |
+| `roi_temp/crop_challenge.py` | 원본 challenge 사진(4000×3000)을 마우스로 ROI 자르기 | 강사 제공 ROI 결과(943×897)를 사용 |
+
+### 핵심 결과
+
+- `outputs/day02/compare/preprocess_compare.png`
+- `outputs/day02/challenge/challenge_result.jpg` · `challenge_trials_compare.png`
+- `reports/day02_parameter_table.csv`
+- `reports/day02_preprocess_reason.md`
+
+### Mini Challenge 판단
+
+흰 병뚜껑과 회색 배경이 모두 밝은 계열(배경 134~147 ≥ 병뚜껑 131)이라
+Brightness · Gamma · CLAHE 어떤 것도 Otsu에서 배경을 분리하지 못했다.
+→ **전처리 미사용**, 원인은 화질이 아니라 촬영조건(배경·조명). 3일차에서 어두운 경계선을 Contour로 확인한다.
+
+### 오늘의 핵심
+
+전처리 기술을 먼저 선택하는 것이 아니라
+
+문제 확인
+→ 필요한 전처리 선택
+→ Parameter 비교
+→ Threshold / Otsu 결과 확인
+→ 사용 여부 결정
+
+순서로 판단한다.
+
+### 다음 학습
+
+Day 03에서는 Binary 이미지에
+Morphology와 Contour를 적용하여
+객체의 면적·개수·위치를 측정하고
+Rule 기반 OK / NG 판정으로 연결한다.
