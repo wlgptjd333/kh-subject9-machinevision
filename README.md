@@ -143,3 +143,67 @@ Day 03에서는 Binary 이미지에
 Morphology와 Contour를 적용하여
 객체의 면적·개수·위치를 측정하고
 Rule 기반 OK / NG 판정으로 연결한다.
+
+---
+
+## Day 03 — Morphology·Contour와 규칙 기반 판정
+
+1일차에서 실제 촬영한 ROI 이미지와
+2일차에서 학습한 Threshold / Otsu 방식을 이어서 사용하였다.
+
+3일차에서는 Binary Image를 Morphology로 정리하고,
+Contour를 이용하여 객체의 특징을 숫자로 측정한 뒤
+실제 측정값을 근거로 Rule 기반 OK / NG 판정을 만들었다.
+
+### 실습 흐름
+
+ROI Image → Gray → Threshold / Otsu → Binary Image → Morphology → Contour → Feature 측정
+→ cap_on / cap_off 비교 → Candidate Rule → OK / NG → 새로운 실제 촬영 이미지 Batch Test → 결과 분석 → Mini Challenge
+
+### 만든 코드
+
+| 파일 | 내용 | 결과 |
+|---|---|---|
+| `src/18_morphology_compare.py` | Opening / Closing, Kernel 3·5·9 비교 | 3×3이 노이즈를 지우면서 뚜껑-링 틈을 남김, 9×9 Closing은 둘을 붙여 버림 |
+| `src/19_contour_measure.py` | Contour → Area · Area Ratio · BBox · Center | cap_on: Contour 5개, Area Ratio 0.661 |
+| `src/20_cap_feature_compare.py` | cap_on / cap_off Feature 비교 → `reports/day03_reference_features.csv` | Area Ratio 0.661 vs 0.459 → Rule Feature로 선택 |
+| `src/21_cap_rule.py` | 중간값 Candidate Threshold로 OK / NG | Threshold 0.560, 기준 2장 맞음 (성능 아님) |
+| `src/22_cap_batch_test.py` | 640×480 새 촬영 6장 Batch → `reports/day03_inspection_results.csv` | 기준 001 → Threshold 0.361, Test 4장 4/4 (cap_off_003 여유 0.044) |
+| `src/23_day03_challenge.py` | Mini Challenge — 빨간 왕관 뚜껑 HSV Mask | 0.094 vs 0.003, Threshold 0.048, 4/4 |
+| `21_cap_rule_review.ipynb` | `21_cap_rule.py` Jupyter 리뷰 (강사 리뷰 노트) | 69셀 실행 |
+
+### 병뚜껑 Rule 실습
+
+기준 이미지에서 측정한 `largest_area_ratio`를 비교하여
+병뚜껑 있음과 없음을 구분하는 후보 기준값을 만들었다.
+
+```text
+cap_on  → largest_area_ratio가 상대적으로 큼
+cap_off → largest_area_ratio가 상대적으로 작음
+        ↓
+두 값 사이에서 Candidate Threshold 결정
+        ↓
+Threshold 이상 → cap_on → OK
+Threshold 미만 → cap_off → NG
+```
+
+같은 병뚜껑이어도 기준 세트에 따라 Threshold가 0.560 ↔ 0.361로 달라졌다 → 촬영 조건이 바뀌면 기준값을 다시 정해야 한다.
+자세한 분석: [`reports/day03_rule_analysis.md`](reports/day03_rule_analysis.md)
+
+### 확장 실습 — IP Webcam + FastAPI 실시간 병뚜껑 검사
+
+| 파일 | 역할 |
+|---|---|
+| `src/cap_inspector.py` | 1~3일차 검사 로직을 함수로 (기준 이미지 2장 → Rule, ROI → OK / NG / CHECK) |
+| `src/fastapi_cap_app.py` | IP Webcam Frame 수신, ROI 검사, `/api/status`·`/stream.mjpg` 제공 |
+| `web/cap_inspection.html` | 실시간 영상, 마우스 ROI 선택, OK / NG 표시 |
+| `tests/test_inspector.py` | 카메라 없이 검사 로직 + FastAPI 연동 자동 테스트 (2 passed) |
+
+```bash
+python -m uvicorn src.fastapi_cap_app:app --host 127.0.0.1 --port 8000   # 브라우저: http://127.0.0.1:8000
+python -m pytest tests/test_inspector.py -q
+```
+
+### 다음 학습
+
+Day 04 — 객체 분리 · Template · 특징점 매칭
