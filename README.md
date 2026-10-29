@@ -278,3 +278,86 @@ tilt_glare만 Inlier Ratio 0.72로 낮음 (반사·원근 영향).
 ### 다음 학습
 
 Day 05 — Calibration · 복합 Rule · Test 실패 분석
+
+---
+
+## Day 05 — Calibration · Rule Freeze · Test
+
+### 검사 대상
+
+광천김 포장지의 기준 로고(`reference_label.jpg`, Day 04에서 만든 것) 존재 및 정합 검사
+
+### 사용한 기술
+
+- Template Matching · SIFT · RANSAC · Homography → `src/day05_logo_features.py` 공통 함수로 정리
+
+### 실습 흐름
+
+```text
+day05_logo_features.py  측정 공통 함수 (read_image / prepare_reference / measure_target)
+        ↓
+33  ok_01 한 장으로 동작 확인
+34  Calibration 12장 (OK 6 / NG 6) 측정 → CSV
+35  SIFT × Inlier Ratio Threshold 조합 15×15 시험 → 후보 Rule
+36  Rule 동결 → configs/day05_logo_rules.json
+37  처음 보는 Test 6장 (OK 3 / NG 3) 판정
+38  TP / TN / FP / FN, Precision / Recall, FP·FN 이미지 분리
+```
+
+### Calibration
+
+- OK: 6장 / NG: 6장 (NG = 로고 일부를 천으로 가림)
+- 측정값: Template Score · SIFT Good Match · Homography Inlier · Inlier Ratio
+- Template Score는 OK 0.43~0.56 / NG 0.44~0.54로 겹쳐서 판정에 쓰지 않음
+- 최선 후보 Accuracy 0.9167 (FP 1 = `ok_06`, SIFT 74로 혼자 낮음)
+
+### Baseline Rule
+
+- Version: day05-logo-v1.0 (`git tag day05-logo-v1.0`)
+- Homography Found: True
+- SIFT Good Match >= 129
+- Inlier Ratio >= 0.8664
+
+### Test
+
+| 파일 | 실제 | 판정 | SIFT | Inlier Ratio | 결과 | NG Reason |
+|---|---|---|---:|---:|---|---|
+| test_ok_01 | OK | NG | 169 | 0.7811 | FP | LOW_INLIER_RATIO |
+| test_ok_02 | OK | NG | 156 | 0.8397 | FP | LOW_INLIER_RATIO |
+| test_ok_03 | OK | NG | 204 | 0.8529 | FP | LOW_INLIER_RATIO |
+| test_ng_01 | NG | NG | 58 | 0.7414 | TP | LOW_SIFT_MATCH; LOW_INLIER_RATIO |
+| test_ng_02 | NG | NG | 111 | 0.7658 | TP | LOW_SIFT_MATCH; LOW_INLIER_RATIO |
+| test_ng_03 | NG | NG | 105 | 0.9143 | TP | LOW_SIFT_MATCH |
+
+- Accuracy: 0.5000 / TP 3 · TN 0 · FP 3 · FN 0
+- NG Precision: 0.5000 / NG Recall: 1.0000
+
+### Test 실패 분석
+
+- FP: 3 / FN: 0 — 불량은 하나도 놓치지 않았지만 정상 3장을 모두 불량으로 판정
+- 공통 NG Reason: `LOW_INLIER_RATIO` — 세 장 모두 SIFT는 통과(156~204), Inlier Ratio만 0.78~0.85로 기준 0.8664 아래
+- 결과 이미지에서 Test OK 사진들은 비닐 반사가 로고 근처까지 퍼져 있다 → 반사 부분의 틀린 Match가 Inlier Ratio를 낮춘 것으로 보임 (Day 04 `tilt_glare` 0.72와 같은 현상)
+- Calibration 12장에는 이런 반사 조건이 거의 없었다 → **기준 데이터가 실제 조건을 다 담지 못한 것**이 원인
+- Test 결과를 보고 Threshold를 다시 맞추지 않고 현재 Baseline의 한계로 기록 (Test에 맞추면 Test가 더 이상 "처음 보는 데이터"가 아니다)
+
+### Mini Challenge
+
+다른 제품 사진(Reference 1 + Calibration 6 + Test 4)이 필요해서 아직 진행하지 않음 — `src/39_day05_mini_challenge.py`는 교재 기본 틀 그대로.
+
+### 핵심 결과 파일
+
+- reports/day05_calibration_measurements.csv
+- reports/day05_rule_candidates.csv
+- configs/day05_logo_rules.json
+- reports/day05_test_results.csv
+- reports/day05_test_metrics.md
+
+### 오늘의 핵심
+
+Calibration 데이터로 판정 기준을 결정하고, 기준을 동결한 뒤 처음 보는 Test 데이터에 적용했다.
+Calibration 91.67% → Test 50%. Accuracy뿐 아니라 FP와 FN을 확인했고,
+FP 3건의 공통 NG Reason(`LOW_INLIER_RATIO`)을 분석하여 현재 Baseline의 한계(반사 조건 부족)를 확인했다.
+
+### 다음 학습
+
+Day 06 — OCR 기반 제조 문자·코드 검사
