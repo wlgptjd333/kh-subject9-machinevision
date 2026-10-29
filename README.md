@@ -207,3 +207,74 @@ python -m pytest tests/test_inspector.py -q
 ### 다음 학습
 
 Day 04 — 객체 분리 · Template · 특징점 매칭
+
+---
+
+## Day 04 — 객체 분리 · Template · 특징점 매칭
+
+광천김 포장지의 로고 영역(`KC + (주)광천김 + 영문`)을 기준으로 다음 방법을 실습했다.
+GrabCut · MeanShift · Template Matching · ORB · SIFT · RANSAC · Homography
+
+### 실습 흐름
+
+```text
+full_front.jpg ─(24)→ reference_label.jpg + Target 4장 (normal / shift / rot15 / scale90)
+                              ↓
+        Template(27) · ORB(28) · SIFT(29) · SIFT+Homography(30) 각각 측정
+                              ↓
+                    31 → reports/day04_rotation_compare.csv
+                              ↓
+        32 Mini Challenge → 실제 재촬영 4장에 방법 하나 선택해서 적용
+```
+
+GrabCut(25)과 MeanShift(26)는 별도 실험 — 위 Pipeline에 연결하지 않는다.
+
+### 만든 코드
+
+| 파일 | 역할 | 결과 |
+|---|---|---|
+| `src/24_day04_prepare.py` | ROI (510, 870, 950, 1068) Crop → Reference, 이동·15° 회전·90% Target 생성 | Template 440×198 |
+| `src/25_grabcut.py` | Rectangle wide / medium / tight 비교 | 전경 비율 0.661 / 0.626 / 0.452 |
+| `src/26_meanshift.py` | `sp`, `sr` 4단계 비교 | 10/20 → 50/80 처리시간 0.9 s → 9.8 s |
+| `src/27_template_matching.py` | Target별 Score·Location | `reports/day04_template_results.csv` |
+| `src/28_orb_matching.py` | ORB Good Match | `reports/day04_orb_results.csv` |
+| `src/29_sift_matching.py` | SIFT Good Match | `reports/day04_sift_results.csv` |
+| `src/30_homography.py` | SIFT + RANSAC + Homography로 로고 사각형 | `reports/day04_homography_results.csv` |
+| `src/31_day04_compare.py` | 네 방법 결과 통합 | `reports/day04_rotation_compare.csv` |
+| `src/32_day04_challenge.py` | Mini Challenge — SIFT + Homography 선택 | `reports/day04_method_selection.md` |
+
+### 주요 결과 (강사 교재 수치와 동일)
+
+| 조건 | Template Score | ORB Good | SIFT Good | Inlier (Ratio) |
+|---|---:|---:|---:|---|
+| normal | 0.9997 | 276 | 615 | 610 (0.989) |
+| shift | 0.4534 ✗ 위치 틀림 | 245 | 596 | 594 (0.995) |
+| rot15 | 0.4750 ✗ | 232 | 458 | 447 (0.974) |
+| scale90 | 0.6240 | 156 | 413 | 402 (0.976) |
+
+- Template Matching → 기준 상태만 정확, 회전·크기 변화에서 Score 급감. **Score만 보지 말고 사각형 위치도 확인**해야 한다.
+- shift가 실패한 이유: 로고가 이미지 맨 아래(y 870~1068, 이미지 높이 1068)에 있다. 아래로 20px 밀면 로고는 y 890~1088 → 이미지 밖으로 잘려서 Template(높이 198)이 들어갈 정답 위치 자체가 없다. 그래서 다른 곳을 찾았다.
+- ORB / SIFT → 변화가 있어도 Match가 유지됨. SIFT가 Match 수가 더 많고 안정적.
+- SIFT + Homography → 네 조건 모두 로고 위치를 사각형으로 찾음.
+
+### Mini Challenge
+
+실제 재촬영 4장 (shift / rotate / distance / tilt_glare)에 SIFT + Homography 적용 → 4장 모두 FOUND,
+tilt_glare만 Inlier Ratio 0.72로 낮음 (반사·원근 영향).
+자세한 기록: [`reports/day04_method_selection.md`](reports/day04_method_selection.md)
+
+### 오늘의 핵심
+
+```text
+같은 모양을 그대로 찾고 싶다            → Template Matching
+특징적인 점을 비교하고 싶다             → ORB / SIFT
+회전·크기 변화가 있는 평면 라벨의 위치   → SIFT + RANSAC + Homography
+제품과 배경을 분리                      → GrabCut
+색상 영역 단순화                        → MeanShift
+```
+
+오늘은 측정만 — OK / NG Threshold는 Day 05 Calibration에서 정한다.
+
+### 다음 학습
+
+Day 05 — Calibration · 복합 Rule · Test 실패 분석
