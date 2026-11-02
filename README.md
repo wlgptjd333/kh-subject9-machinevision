@@ -361,3 +361,57 @@ FP 3건의 공통 NG Reason(`LOW_INLIER_RATIO`)을 분석하여 현재 Baseline�
 ### 다음 학습
 
 Day 06 — OCR 기반 제조 문자·코드 검사
+
+## Day 07 — Anomaly Detection
+
+> Day 06(OCR) 실습 코드는 이 저장소에 아직 없음. Day 07은 Day 06 결과를 쓰지 않아 먼저 진행함.
+
+### Dataset
+
+MVTec AD bottle (이미지는 저장소에 올리지 않음)
+
+### Baseline
+
+- Pretrained ResNet18 (ImageNet, Weight는 학습하지 않음)
+- Feature Layer: layer3
+- Normal Reference: Normal Train 167장의 Feature 평균
+- Threshold: 0.067458 (Normal Validation 42장의 95 Percentile, 교재 0.067469)
+- Rule Version: day07-anomaly-v1.0
+
+### Test Result
+
+- Accuracy: 0.9277
+- Precision: 0.9672
+- Recall: 0.9365
+- TP: 59
+- TN: 18
+- FP: 2
+- FN: 4
+
+### Challenge
+
+정상 이미지를 Dark / Bright / Blur / Shift / Rotation으로 변형하여
+같은 Frozen Rule로 다시 검사했다.
+
+- FP: Dark (0.1234) / Bright (0.1043) / Shift (0.0761)
+- PASS: Blur (0.0652) / Rotation (0.0546)
+
+### 핵심 결과 파일
+
+- configs/day07_anomaly_rules.json
+- reports/day07_validation_scores.csv
+- reports/day07_threshold_compare.csv
+- reports/day07_anomaly_scores.csv
+- reports/day07_test_metrics.md
+- reports/day07_challenge_results.csv
+- reports/day07_failure_analysis.md
+
+### 오늘의 핵심
+
+정상 데이터로 Normal Reference를 만들고, Validation에서 Threshold를 결정한 뒤
+Freeze한 Rule을 Test에 적용했다.
+촬영 환경 변화만으로도 FP가 발생할 수 있고, 작은 결함은 위치를 찾아도 Score가 낮아 FN이 될 수 있음을 확인했다.
+
+### 다음 학습
+
+Day 08 — Zero-shot · One-shot · Few-shot · Defect Generation
