@@ -362,9 +362,69 @@ FP 3건의 공통 NG Reason(`LOW_INLIER_RATIO`)을 분석하여 현재 Baseline�
 
 Day 06 — OCR 기반 제조 문자·코드 검사
 
-## Day 07 — Anomaly Detection
+## Day 06 — OCR 기반 제조 문자 검사
 
-> Day 06(OCR) 실습 코드는 이 저장소에 아직 없음. Day 07은 Day 06 결과를 쓰지 않아 먼저 진행함.
+### 검사 대상
+
+제품에 인쇄된 13자리 SN
+
+### 사용 기술
+
+- OpenCV ROI
+- Gray / CLAHE / Otsu 비교
+- Tesseract OCR, pytesseract
+- PSM, Whitelist
+- Text Cleaning, Regex
+- Expected SN 비교
+- Deskew
+
+### 최종 OCR Rule
+
+- Version: day06-ocr-v1.0
+- Preprocess: original
+- PSM: 7
+- Whitelist: 0123456789
+- Pattern: ^[0-9]{13}$
+- ROI: 교재에 적힌 좌표 사용 (41번은 마우스 선택 대신 좌표를 넣어 실행)
+
+### 전처리 비교
+
+- 성공: Original / Gray / CLAHE
+- 실패: Otsu (0637245697424) / CLAHE+Otsu (0637245670424)
+
+### Batch 검사 결과
+
+- 검사 이미지: 6장
+- OCR Exact Accuracy: 100%
+- Inspection Accuracy: 100%
+- Expected Match: 4 / 6 (교육용 NG 2장은 NG로 판정)
+
+### 환경 변화 테스트
+
+- 성공: Low Contrast
+- 실패: Blur / Tilt / Tilt + Deskew / Glare
+
+### Mini Challenge
+
+아직 진행하지 않음 — `src/49_day06_mini_challenge.py`는 마우스로 ROI를 고르고 값을 직접 입력해야 함
+
+### 주요 결과 파일
+
+- configs/day06_ocr_rules.json
+- configs/day06_labels.csv
+- reports/day06_preprocess_compare.csv
+- reports/day06_ocr_results.csv
+- reports/day06_ocr_metrics.md
+- reports/day06_challenge_results.csv
+- reports/day06_failure_analysis.md
+
+### 오늘 확인한 핵심
+
+제품 이미지에서 필요한 문자 영역을 ROI로 선택하고,
+OCR로 읽은 문자열을 형식과 Expected Value로 검사하여 OK / NG 판정으로 연결했다.
+OCR이 정확하게 문자를 읽는 것과 제품 자체가 정상인 것은 서로 다른 문제다.
+
+## Day 07 — Anomaly Detection
 
 ### Dataset
 
