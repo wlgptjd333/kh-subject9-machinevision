@@ -4,6 +4,21 @@ OpenCV 기반 제조 머신비전 검사기술을 단계적으로 학습하는 �
 
 ---
 
+## 진도
+
+| Day | 내용 | 코드 | 핵심 결과 |
+|---:|---|---|---|
+| 01 | 검사문제 설계, ROI | `00`~`08` | ROI 설정 |
+| 02 | Image Enhancement | `09`~`17` | 전처리 비교 |
+| 03 | Morphology, Contour, Rule | `18`~`23` | 병뚜껑 OK/NG |
+| 04 | Template, SIFT, Homography | `24`~`32` | SIFT + Homography 선택 |
+| 05 | Calibration, Rule Freeze | `33`~`39` | Test Accuracy 0.50 |
+| 06 | OCR | `40`~`49` | Batch OCR 100% |
+| 07 | Anomaly Detection | `50`~`61` | Test Accuracy 0.9277 |
+| 08 | One-shot, Few-shot, Cut-Paste | `62`~`69` | 0.85 / 0.90 |
+
+---
+
 ## Day 01 — 머신비전 검사문제 설계와 ROI
 
 1일차에는 완성된 OK / NG 검사기를 만드는 것이 아니라
