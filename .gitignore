@@ -36,3 +36,6 @@ roi_temp/*.jpg
 
 # Day07 생성 Feature
 artifacts/day07/
+
+# Day08 생성 Feature
+artifacts/day08/

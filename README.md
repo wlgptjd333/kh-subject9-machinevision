@@ -475,3 +475,55 @@ Freeze한 Rule을 Test에 적용했다.
 ### 다음 학습
 
 Day 08 — Zero-shot · One-shot · Few-shot · Defect Generation
+
+## Day 08 — Low-Data Inspection
+
+> 수업 전에 미리 만든 결과. 강사님이 교재를 수정하면 다시 확인해야 함.
+
+### One-shot
+
+- Normal Reference: 1장
+- Threshold: 0.982105 (정상 Calibration 20장의 5 Percentile)
+- Common Query: Normal 10장 + Anomaly 10장
+- Accuracy: 85%
+- FP: 1
+- FN: 2
+
+### Few-shot
+
+- Normal Support: 5장
+- Anomaly Support: 5장
+- Common Query: One-shot과 동일
+- Accuracy: 90%
+- FP: 0
+- FN: 2
+
+### Comparison
+
+이번 실험에서는 Few-shot에서 정상 오탐은 줄었지만 불량 미검출 FN은 여전히 남았다.
+놓친 이미지는 One-shot이 007·016, Few-shot이 000·007로 서로 다르다.
+
+### Defect Generation
+
+- Defect Type: broken_small
+- Ground Truth Mask 기반 Cut-Paste
+- Synthetic Defect 20장 생성
+- 일부는 결함이 병 테두리 밖까지 나가거나 너무 커서 그대로 쓰기 어려움 — 생성 후 품질 확인 필요
+
+### Mini Challenge
+
+아직 진행하지 않음 — 교재에 완성 코드가 없고 직접 작성하는 실습
+
+### 주요 결과 파일
+
+- configs/day08_one_shot_rules.json
+- configs/day08_fewshot_config.json
+- reports/day08_one_shot_results.csv
+- reports/day08_fewshot_results.csv
+- reports/day08_method_comparison.csv
+- reports/day08_defect_metadata.csv
+
+### 오늘의 핵심
+
+데이터가 적을 때는 데이터의 수와 상태를 먼저 확인하고
+One-shot, Few-shot, Anomaly Detection, Defect Generation 등의 후보 방법을 선택해야 한다.
