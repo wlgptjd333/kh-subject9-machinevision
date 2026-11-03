@@ -16,6 +16,8 @@ OpenCV 기반 제조 머신비전 검사기술을 단계적으로 학습하는 �
 | 06 | OCR | `40`~`49` | Batch OCR 100% |
 | 07 | Anomaly Detection | `50`~`61` | Test Accuracy 0.9277 |
 | 08 | One-shot, Few-shot, Cut-Paste | `62`~`69` | 0.85 / 0.90 |
+| 09 | MLOps, Drift, Hybrid | `70`~`79` | OR 0.90 / AND 0.85 |
+| 10 | FastAPI, Web Dashboard | `80`~`82`, `day10_service/` | OK/NG·이유·이력 표시 |
 
 ---
 
@@ -542,3 +544,48 @@ Day 08 — Zero-shot · One-shot · Few-shot · Defect Generation
 
 데이터가 적을 때는 데이터의 수와 상태를 먼저 확인하고
 One-shot, Few-shot, Anomaly Detection, Defect Generation 등의 후보 방법을 선택해야 한다.
+
+## Day 09 — MLOps / Hybrid
+
+> Day 08과 마찬가지로 수업 전에 미리 만든 결과. Mini Challenge는 미실행.
+
+- Version Manifest: reports/day09/version_manifest.json
+- Day08 Audit: 같은 Query 20장, 저장된 Metric 일치
+- Day05 한 변수 변경: inlier_ratio_min 0.8664 → 0.8108, Accuracy 0.9167 → 0.8333 (FN 0 → 1)
+- Day07 Drift: 밝기 137.7 → 89.3, FP Rate 0.10 → 1.00
+- Hybrid: OR 0.90 (FP 1, FN 1), AND 0.85 (FP 0, FN 3), One-shot 0.85, Few-shot 0.90
+- 핵심: 결합은 FP와 FN을 맞바꾸는 선택이고, 성능 향상을 보장하지 않는다
+- 분석: reports/day09/day09_analysis.md, reports/day09/day09_tech_matrix.md
+
+## Day 10 — Machine Vision Service
+
+> 수업 전에 미리 만든 결과. PC 브라우저에서 확인했고 Mobile·Tablet 접속은 시험하지 않음.
+
+### Architecture
+
+```text
+Inspection Module → Service Core → JSON → FastAPI → Web Dashboard
+```
+
+### Reused Inspection
+
+- Day06 OCR Frozen Rule (day06-ocr-v1.0)
+
+### API
+
+- GET /api/health
+- GET /api/samples
+- POST /api/inspect
+- GET /api/latest
+- GET /api/history
+- GET /api/stats
+
+### 실행
+
+```bash
+uvicorn day10_service.api_main:app --host 127.0.0.1 --port 8010
+```
+
+### 핵심
+
+검사 알고리즘을 만드는 것에서 끝나지 않고, 검사 결과를 API와 Web에서 사용할 수 있는 서비스 구조로 확장했다.
